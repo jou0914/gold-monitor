@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
@@ -12,181 +13,210 @@
 </head>
 <body class="bg-[#F8FAFC] text-slate-800 min-h-screen p-4 md:p-8">
     <div class="max-w-md mx-auto space-y-6">
+
+```
+    <header class="flex justify-between items-center px-2 py-4">
+        <div>
+            <h1 class="text-2xl font-black text-slate-900">Gold <span class="text-amber-500">Tracker</span></h1>
+            <p id="status" class="text-[10px] font-bold text-slate-400 uppercase mt-1 tracking-widest">Initialising...</p>
+        </div>
+        <div class="text-right">
+            <p id="current-date" class="text-[10px] font-bold text-slate-400">2026.03.27.1</p>
+            <p id="last-update" class="text-[10px] font-medium text-slate-300">--:--:--</p>
+        </div>
+    </header>
+
+    <div class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-50 text-center relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-full -mr-16 -mt-16 opacity-50"></div>
+        <p id="price-label" class="text-[11px] font-black text-amber-600 uppercase tracking-widest mb-3">基準金價 (自動偵測中)</p>
+        <div class="flex items-baseline justify-center space-x-2">
+            <input type="number" id="bot-real-price" value="0" 
+                   class="w-full text-6xl font-[900] text-slate-900 bg-transparent border-none focus:ring-0 p-0 outline-none tracking-tighter text-center transition-all">
+            <span class="text-slate-300 font-bold text-xl uppercase">TWD</span>
+        </div>
         
-        <header class="flex justify-between items-center px-2 py-4">
-            <div>
-                <h1 class="text-2xl font-black text-slate-900">Gold <span class="text-amber-500">Tracker</span></h1>
-                <p id="status" class="text-[10px] font-bold text-slate-400 uppercase mt-1 tracking-widest">Initialising...</p>
-            </div>
-            <div class="text-right">
-                <p id="current-date" class="text-[10px] font-bold text-slate-400">2026.03.27.</p>
-                <p id="last-update" class="text-[10px] font-medium text-slate-300">--:--:--</p>
-            </div>
-        </header>
-
-        <div class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-50 text-center relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-full -mr-16 -mt-16 opacity-50"></div>
-            <p id="price-label" class="text-[11px] font-black text-amber-600 uppercase tracking-widest mb-3">基準金價 (自動偵測中)</p>
-            <div class="flex items-baseline justify-center space-x-2">
-                <input type="number" id="bot-real-price" value="0" 
-                       class="w-full text-6xl font-[900] text-slate-900 bg-transparent border-none focus:ring-0 p-0 outline-none tracking-tighter text-center transition-all">
-                <span class="text-slate-300 font-bold text-xl uppercase">TWD</span>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-3 mt-6">
-                <button onclick="window.open('https://www.wantgoo.com/global/gold', '_blank')" class="bg-red-500 text-white px-4 py-4 rounded-2xl text-[10px] font-black uppercase shadow-md"><span>玩股網對照</span></button>
-                <button onclick="window.open('https://wealth.esunbank.com/zh-tw/gold/price/current-price?dev=mobile', '_blank')" class="bg-green-600 text-white px-4 py-4 rounded-2xl text-[10px] font-black uppercase shadow-md"><span>玉山官網對照</span></button>
-            </div>
-
-            <button onclick="autoFetchBOT()" class="mt-4 flex items-center justify-center space-x-2 bg-slate-900 text-white px-6 py-4 rounded-2xl text-[11px] font-black uppercase w-full shadow-lg">
-                <svg id="sync-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span>重新同步數據</span>
-            </button>
-            <p id="fetch-msg" class="text-[9px] text-slate-400 mt-3 italic font-bold uppercase">透過 Vercel Proxy 同步中...</p>
+        <div class="grid grid-cols-2 gap-3 mt-6">
+            <button onclick="window.open('https://www.wantgoo.com/global/gold', '_blank')" class="bg-red-500 text-white px-4 py-4 rounded-2xl text-[10px] font-black uppercase shadow-md"><span>玩股網對照</span></button>
+            <button onclick="window.open('https://wealth.esunbank.com/zh-tw/gold/price/current-price?dev=mobile', '_blank')" class="bg-green-600 text-white px-4 py-4 rounded-2xl text-[10px] font-black uppercase shadow-md"><span>玉山官網對照</span></button>
         </div>
 
-        <div class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-50">
-            <div class="grid grid-cols-4 gap-3 mb-8 text-center">
-                <div><p class="text-[10px] font-black text-slate-400 mb-2">兩</p><input type="number" id="unit-liang" placeholder="0" class="w-full bg-slate-50 rounded-2xl py-4 text-center font-black border-none outline-none"></div>
-                <div><p class="text-[10px] font-black text-slate-400 mb-2">錢</p><input type="number" id="unit-qian" placeholder="0" class="w-full bg-slate-50 rounded-2xl py-4 text-center font-black border-none outline-none"></div>
-                <div><p class="text-[10px] font-black text-slate-400 mb-2">分</p><input type="number" id="unit-fen" placeholder="0" class="w-full bg-slate-50 rounded-2xl py-4 text-center font-black border-none outline-none"></div>
-                <div><p class="text-[10px] font-black text-amber-500 mb-2">厘</p><input type="number" id="unit-li" placeholder="0" class="w-full bg-amber-50 rounded-2xl py-4 text-center font-black border-none text-amber-600 outline-none"></div>
-            </div>
+        <button onclick="autoFetchBOT()" class="mt-4 flex items-center justify-center space-x-2 bg-slate-900 text-white px-6 py-4 rounded-2xl text-[11px] font-black uppercase w-full shadow-lg">
+            <svg id="sync-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <span>重新同步數據</span>
+        </button>
+        <p id="fetch-msg" class="text-[9px] text-slate-400 mt-3 italic font-bold uppercase">透過 Vercel Proxy 同步中...</p>
+    </div>
 
-            <div class="space-y-2 mb-8 text-center">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">實際成交總價 (TWD)</p>
-                <input type="number" id="total-price" placeholder="輸入成交價" class="w-full bg-slate-900 text-white rounded-[1.5rem] py-5 text-center text-3xl font-black outline-none shadow-xl">
-            </div>
-
-            <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2rem] p-6 text-white text-center shadow-xl relative overflow-hidden">
-                <p class="text-[10px] font-bold opacity-70 mb-1 uppercase tracking-widest">換算每克單價</p>
-                <span id="result-per-g" class="text-5xl font-[900] tracking-tighter">---</span>
-                <div id="diff-tag" class="mt-4 mx-auto w-fit bg-white/20 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-sm">等待數據</div>
-            </div>
+    <div class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-50">
+        <div class="grid grid-cols-4 gap-3 mb-8 text-center">
+            <div><p class="text-[10px] font-black text-slate-400 mb-2">兩</p><input type="number" id="unit-liang" placeholder="0" class="w-full bg-slate-50 rounded-2xl py-4 text-center font-black border-none outline-none"></div>
+            <div><p class="text-[10px] font-black text-slate-400 mb-2">錢</p><input type="number" id="unit-qian" placeholder="0" class="w-full bg-slate-50 rounded-2xl py-4 text-center font-black border-none outline-none"></div>
+            <div><p class="text-[10px] font-black text-slate-400 mb-2">分</p><input type="number" id="unit-fen" placeholder="0" class="w-full bg-slate-50 rounded-2xl py-4 text-center font-black border-none outline-none"></div>
+            <div><p class="text-[10px] font-black text-amber-500 mb-2">厘</p><input type="number" id="unit-li" placeholder="0" class="w-full bg-amber-50 rounded-2xl py-4 text-center font-black border-none text-amber-600 outline-none"></div>
         </div>
 
-        <div class="bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-slate-50 text-[13px]">
-            <table class="w-full text-left">
-                <tbody id="specs-body" class="divide-y divide-slate-50"></tbody>
-            </table>
+        <div class="space-y-2 mb-8 text-center">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">實際成交總價 (TWD)</p>
+            <input type="number" id="total-price" placeholder="輸入成交價" class="w-full bg-slate-900 text-white rounded-[1.5rem] py-5 text-center text-3xl font-black outline-none shadow-xl">
+        </div>
+
+        <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2rem] p-6 text-white text-center shadow-xl relative overflow-hidden">
+            <p class="text-[10px] font-bold opacity-70 mb-1 uppercase tracking-widest">換算每克單價</p>
+            <span id="result-per-g" class="text-5xl font-[900] tracking-tighter">---</span>
+            <div id="diff-tag" class="mt-4 mx-auto w-fit bg-white/20 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-sm">等待數據</div>
         </div>
     </div>
 
-    <script>
-        const fmt = new Intl.NumberFormat('zh-TW', { maximumFractionDigits: 1 });
-        const VERCEL_PROXY = "https://Gold-monitor-mht36bed1-didos-projects-f29f04d8.vercel.app/api/proxy?url=";
+    <div class="bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-slate-50 text-[13px]">
+        <table class="w-full text-left">
+            <tbody id="specs-body" class="divide-y divide-slate-50"></tbody>
+        </table>
+    </div>
+</div>
 
-        async function autoFetchBOT() {
-            const statusEl = document.getElementById('status');
-            const botInput = document.getElementById('bot-real-price');
-            const msgEl = document.getElementById('fetch-msg');
-            const syncIcon = document.getElementById('sync-icon');
-            const labelEl = document.getElementById('price-label');
-            
-            statusEl.innerText = "Syncing...";
-            syncIcon.classList.add('animate-spin');
+<script>
+    const fmt = new Intl.NumberFormat('zh-TW', { maximumFractionDigits: 1 });
+    const VERCEL_PROXY = "https://Gold-monitor-mht36bed1-didos-projects-f29f04d8.vercel.app/api/proxy?url=";
 
-            const now = new Date();
-            const isAfterFive = now.getHours() >= 17;
-            const botUrl = "https://rate.bot.com.tw/gold?Lang=zh-TW";
+    // 從純文字中提取所有數字（去除逗號）
+    function extractNumbers(text) {
+        return [...text.matchAll(/[\d,]+\.?\d*/g)]
+            .map(m => parseFloat(m[0].replace(/,/g, '')))
+            .filter(n => !isNaN(n));
+    }
 
-            try {
-                // 使用您的 Vercel Proxy 抓取台銀網頁
-                const html = await fetch(VERCEL_PROXY + encodeURIComponent(botUrl)).then(r => r.text());
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const targetKeyword = isAfterFive ? '1公克' : '100公克';
-                
-                let foundPrice = null;
-                const rows = Array.from(doc.querySelectorAll('tr'));
-                for (const row of rows) {
-                    // 修正過濾邏輯：必須包含關鍵字且排除標題行
-                    if (row.innerText.includes(targetKeyword) && !row.innerText.includes('幣別') && !row.innerText.includes('條塊')) {
-                        const priceCell = row.querySelector('td.text-right, div.text-right');
-                        if (priceCell) {
-                            const rawText = priceCell.innerText.replace(/,/g, '').trim();
-                            foundPrice = parseFloat(rawText);
-                            if (foundPrice > 0) break;
-                        }
+    async function autoFetchBOT() {
+        const statusEl = document.getElementById('status');
+        const botInput = document.getElementById('bot-real-price');
+        const msgEl = document.getElementById('fetch-msg');
+        const syncIcon = document.getElementById('sync-icon');
+        const labelEl = document.getElementById('price-label');
+        const now = new Date();
+        
+        statusEl.innerText = "Syncing...";
+        syncIcon.classList.add('animate-spin');
+
+        const isAfterFive = now.getHours() >= 17;
+        const botUrl = "https://rate.bot.com.tw/gold?Lang=zh-TW";
+
+        try {
+            const html = await fetch(VERCEL_PROXY + encodeURIComponent(botUrl)).then(r => r.text());
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+
+            // 策略一：掃描所有 <tr>，用 textContent 比對關鍵字
+            const targetKeyword = isAfterFive ? '1公克' : '100公克';
+            let foundPrice = null;
+
+            const rows = Array.from(doc.querySelectorAll('tr'));
+            for (const row of rows) {
+                const rowText = row.textContent || '';
+                if (rowText.includes(targetKeyword) && !rowText.includes('幣別')) {
+                    // 取該行所有 td，找最後一個含有合理數值的
+                    const tds = Array.from(row.querySelectorAll('td'));
+                    for (let i = tds.length - 1; i >= 0; i--) {
+                        const nums = extractNumbers(tds[i].textContent);
+                        const candidate = nums.find(n => n > 1000);
+                        if (candidate) { foundPrice = candidate; break; }
                     }
+                    if (foundPrice) break;
                 }
-
-                if (foundPrice && foundPrice > 1000) {
-                    const finalPrice = isAfterFive ? foundPrice : (foundPrice / 100);
-                    botInput.value = finalPrice.toFixed(1);
-                    labelEl.innerText = isAfterFive ? "台銀基準 (1g 盤後)" : "台銀基準 (100g 牌價)";
-                    msgEl.innerText = `✅ 台銀同步成功: NT$ ${finalPrice.toFixed(1)}`;
-                    statusEl.innerText = "Online (BOT)";
-                } else {
-                    throw new Error("BOT Structure Error");
-                }
-
-            } catch (err) {
-                // 備援方案：玉山銀行
-                try {
-                    const esunUrl = "https://wealth.esunbank.com/zh-tw/gold/price/current-price?dev=mobile";
-                    const esunHtml = await fetch(VERCEL_PROXY + encodeURIComponent(esunUrl)).then(r => r.text());
-                    const match = esunHtml.match(/[45],[0-9]{3}/);
-                    if (match) {
-                        const esunPrice = parseFloat(match[0].replace(/,/g, ''));
-                        botInput.value = esunPrice.toFixed(1);
-                        labelEl.innerText = "玉山基準 (即時每克)";
-                        msgEl.innerText = `⚠️ 台銀失效，已同步玉山: NT$ ${match[0]}`;
-                        statusEl.innerText = "Online (ESUN)";
-                    }
-                } catch (e) {
-                    msgEl.innerText = "❌ 同步失敗，請手動輸入";
-                    statusEl.innerText = "Manual Mode";
-                }
-            } finally {
-                syncIcon.classList.remove('animate-spin');
-                document.getElementById('last-update').innerText = now.toLocaleTimeString();
-                calculateAll();
             }
-        }
 
-        function calculateAll() {
-            const botPrice = parseFloat(document.getElementById('bot-real-price').value) || 0;
-            const liang = parseFloat(document.getElementById('unit-liang').value) || 0;
-            const qian = parseFloat(document.getElementById('unit-qian').value) || 0;
-            const fen = parseFloat(document.getElementById('unit-fen').value) || 0;
-            const li = parseFloat(document.getElementById('unit-li').value) || 0;
-            const totalPrice = parseFloat(document.getElementById('total-price').value) || 0;
-
-            const resultEl = document.getElementById('result-per-g');
-            const diffTag = document.getElementById('diff-tag');
-            const tableBody = document.getElementById('specs-body');
-
-            const totalQian = (liang * 10) + qian + (fen * 0.1) + (li * 0.01);
-            const totalGrams = totalQian * 3.75;
-
-            if (totalGrams > 0 && totalPrice > 0) {
-                const pricePerG = totalPrice / totalGrams;
-                resultEl.innerText = fmt.format(pricePerG);
-
-                if (botPrice > 0) {
-                    const diffPercent = ((pricePerG - botPrice) / botPrice) * 100;
-                    diffTag.innerText = diffPercent > 0 ? `比基準貴 ${diffPercent.toFixed(1)}%` : `比基準便宜 ${Math.abs(diffPercent).toFixed(1)}%`;
-                    diffTag.className = `mt-4 mx-auto w-fit px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${diffPercent > 0 ? 'bg-red-500/20 text-red-700' : 'bg-green-500/20 text-green-700'}`;
+            // 策略二：若策略一無結果，直接對全文做 regex 找 "1公克" 附近的數字
+            if (!foundPrice) {
+                const idx = html.indexOf('1公克');
+                if (idx !== -1) {
+                    const chunk = html.slice(idx, idx + 400);
+                    const nums = extractNumbers(chunk);
+                    foundPrice = nums.find(n => n > 1000) || null;
                 }
+            }
+
+            if (foundPrice) {
+                const finalPrice = isAfterFive ? foundPrice : (foundPrice / 100);
+                botInput.value = finalPrice.toFixed(1);
+                labelEl.innerText = isAfterFive ? "台銀基準 (1g 盤後)" : "台銀基準 (100g 牌價)";
+                msgEl.innerText = `✅ 台銀同步成功: NT$ ${finalPrice.toFixed(1)}`;
+                statusEl.innerText = "Online (BOT)";
             } else {
-                resultEl.innerText = "---";
-                diffTag.innerText = "等待輸入數據";
-                diffTag.className = "mt-4 mx-auto w-fit bg-slate-100 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest";
+                throw new Error("BOT: 無法解析金價");
             }
 
-            const specs = [{ name: "5g 台銀條塊", w: 5 }, { name: "1 兩 (37.5g)", w: 37.5 }, { name: "1 盎司 (1oz)", w: 31.1035 }];
-            tableBody.innerHTML = "";
-            specs.forEach(s => {
-                tableBody.innerHTML += `<tr><td class="p-6 text-center font-black text-slate-500 uppercase tracking-widest">${s.name}</td><td class="p-6 text-right text-slate-900 font-black text-lg">NT$ ${fmt.format(botPrice * s.w)}</td></tr>`;
-            });
+        } catch (err) {
+            console.warn("台銀失敗:", err.message, "→ 切換玉山備援");
+            // 備援：玉山銀行
+            try {
+                const esunUrl = "https://wealth.esunbank.com/zh-tw/gold/price/current-price?dev=mobile";
+                const esunHtml = await fetch(VERCEL_PROXY + encodeURIComponent(esunUrl)).then(r => r.text());
+
+                // 玉山頁面金價範圍：通常 4,000 ~ 6,000 之間（每克台幣）
+                const matches = [...esunHtml.matchAll(/([456],\d{3})/g)];
+                if (matches.length > 0) {
+                    const esunPrice = parseFloat(matches[0][1].replace(/,/g, ''));
+                    botInput.value = esunPrice.toFixed(1);
+                    labelEl.innerText = "玉山基準 (即時每克)";
+                    msgEl.innerText = `⚠️ 台銀失效，已同步玉山: NT$ ${matches[0][1]}`;
+                    statusEl.innerText = "Online (ESUN)";
+                } else {
+                    throw new Error("ESUN: 無法解析金價");
+                }
+            } catch (e) {
+                console.error("玉山備援也失敗:", e.message);
+                msgEl.innerText = "❌ 自動同步失敗，請手動輸入";
+                statusEl.innerText = "Manual Mode";
+            }
+        } finally {
+            syncIcon.classList.remove('animate-spin');
+            document.getElementById('last-update').innerText = now.toLocaleTimeString();
+            calculateAll();
+        }
+    }
+
+    function calculateAll() {
+        const botPrice = parseFloat(document.getElementById('bot-real-price').value) || 0;
+        const liang = parseFloat(document.getElementById('unit-liang').value) || 0;
+        const qian = parseFloat(document.getElementById('unit-qian').value) || 0;
+        const fen = parseFloat(document.getElementById('unit-fen').value) || 0;
+        const li = parseFloat(document.getElementById('unit-li').value) || 0;
+        const totalPrice = parseFloat(document.getElementById('total-price').value) || 0;
+
+        const resultEl = document.getElementById('result-per-g');
+        const diffTag = document.getElementById('diff-tag');
+        const tableBody = document.getElementById('specs-body');
+
+        const totalQian = (liang * 10) + qian + (fen * 0.1) + (li * 0.01);
+        const totalGrams = totalQian * 3.75;
+
+        if (totalGrams > 0 && totalPrice > 0) {
+            const pricePerG = totalPrice / totalGrams;
+            resultEl.innerText = fmt.format(pricePerG);
+
+            if (botPrice > 0) {
+                const diffPercent = ((pricePerG - botPrice) / botPrice) * 100;
+                diffTag.innerText = diffPercent > 0 ? `比基準貴 ${diffPercent.toFixed(1)}%` : `比基準便宜 ${Math.abs(diffPercent).toFixed(1)}%`;
+                diffTag.className = `mt-4 mx-auto w-fit px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${diffPercent > 0 ? 'bg-red-500/20 text-red-700' : 'bg-green-500/20 text-green-700'}`;
+            }
+        } else {
+            resultEl.innerText = "---";
+            diffTag.innerText = "等待輸入數據";
+            diffTag.className = "mt-4 mx-auto w-fit bg-slate-100 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest";
         }
 
-        ['bot-real-price', 'unit-liang', 'unit-qian', 'unit-fen', 'unit-li', 'total-price'].forEach(id => {
-            document.getElementById(id).addEventListener('input', calculateAll);
+        const specs = [{ name: "5g 台銀條塊", w: 5 }, { name: "1 兩 (37.5g)", w: 37.5 }, { name: "1 盎司 (1oz)", w: 31.1035 }];
+        tableBody.innerHTML = "";
+        specs.forEach(s => {
+            tableBody.innerHTML += `<tr><td class="p-6 text-center font-black text-slate-500 uppercase tracking-widest">${s.name}</td><td class="p-6 text-right text-slate-900 font-black text-lg">NT$ ${fmt.format(botPrice * s.w)}</td></tr>`;
         });
+    }
 
-        window.onload = autoFetchBOT;
-    </script>
+    ['bot-real-price', 'unit-liang', 'unit-qian', 'unit-fen', 'unit-li', 'total-price'].forEach(id => {
+        document.getElementById(id).addEventListener('input', calculateAll);
+    });
+
+    window.onload = autoFetchBOT;
+</script>
+```
+
 </body>
 </html>
