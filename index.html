@@ -19,7 +19,7 @@
                 <p id="status" class="text-[10px] font-bold text-slate-400 uppercase mt-1 tracking-widest">Initialising...</p>
             </div>
             <div class="text-right">
-                <p id="current-date" class="text-[10px] font-bold text-slate-400">2026.03.27</p>
+                <p id="current-date" class="text-[10px] font-bold text-slate-400">2026.03.27.</p>
                 <p id="last-update" class="text-[10px] font-medium text-slate-300">--:--:--</p>
             </div>
         </header>
@@ -83,79 +83,42 @@
         // 您的專屬 Vercel Proxy 網址
         const VERCEL_PROXY = "https://Gold-monitor-mht36bed1-didos-projects-f29f04d8.vercel.app/api/proxy?url=";
 
-        async function autoFetchBOT() {
-            const statusEl = document.getElementById('status');
-            const botInput = document.getElementById('bot-real-price');
-            const msgEl = document.getElementById('fetch-msg');
-            const syncIcon = document.getElementById('sync-icon');
-            const labelEl = document.getElementById('price-label');
-            
-            statusEl.innerText = "Syncing...";
-            syncIcon.classList.add('animate-spin');
+    async function autoFetchBOT() {
+    const statusEl = document.getElementById('status');
+    const botInput = document.getElementById('bot-real-price');
+    const msgEl = document.getElementById('fetch-msg');
 
-            const now = new Date();
-            const isAfterFive = now.getHours() >= 17; // 判斷是否為 17:00 之後
-            const botUrl = "https://rate.bot.com.tw/gold?Lang=zh-TW";
+    statusEl.innerText = "Syncing...";
 
-            try {
-                // --- 優先嘗試：台灣銀行 ---
-                const html = await fetch(VERCEL_PROXY + encodeURIComponent(botUrl)).then(r => r.text());
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const targetKeyword = isAfterFive ? '1公克' : '100公克';
-                
-                let foundPrice = null;
-                const rows = Array.from(doc.querySelectorAll('tr'));
-                for (const row of rows) {
-                    // 準確鎖定目標行並排除標題行
-                    if (row.innerText.includes(targetKeyword) && !row.innerText.includes('幣別')) {
-                        const priceCell = row.querySelector('td.text-right, div.text-right');
-                        if (priceCell) {
-                            const rawText = priceCell.innerText.replace(/,/g, '').trim();
-                            foundPrice = parseFloat(rawText);
-                            if (foundPrice > 0) break;
-                        }
-                    }
-                }
+    try {
+        const res = await fetch("/api/gold");
+        const data = await res.json();
 
-                if (foundPrice && foundPrice > 1000) {
-                    // 營業時間抓取 100g 需除以 100
-                    const finalPrice = isAfterFive ? foundPrice : (foundPrice / 100);
-                    botInput.value = finalPrice.toFixed(1);
-                    msgEl.innerText = `✅ 台銀同步成功 (${isAfterFive ? '1g 盤後' : '100g 牌價'})`;
-                    labelEl.innerText = isAfterFive ? "台銀基準 (1g 盤後)" : "台銀基準 (100g 牌價)";
-                    statusEl.innerText = "Online (BOT)";
-                } else {
-                    throw new Error("BOT structure changed");
-                }
-
-            } catch (err) {
-                // --- 備援方案：玉山銀行 (抓取 4,596 格式數字) ---
-                try {
-                    const esunUrl = "https://wealth.esunbank.com/zh-tw/gold/price/current-price?dev=mobile";
-                    const esunHtml = await fetch(VERCEL_PROXY + encodeURIComponent(esunUrl)).then(r => r.text());
-                    
-                    const match = esunHtml.match(/[45],[0-9]{3}/); // 精準匹配格式
-                    if (match) {
-                        const esunPrice = parseFloat(match[0].replace(/,/g, ''));
-                        botInput.value = esunPrice.toFixed(1);
-                        msgEl.innerText = `⚠️ 台銀失效，已同步玉山價格: ${match[0]}`;
-                        labelEl.innerText = "玉山基準 (即時每克)";
-                        statusEl.innerText = "Online (ESUN)";
-                    } else {
-                        throw new Error("ESUN failed");
-                    }
-                } catch (e) {
-                    msgEl.innerText = `❌ 同步失敗，請手動對照`;
-                    statusEl.innerText = "Manual Mode";
-                }
-            } finally {
-                syncIcon.classList.remove('animate-spin');
-                document.getElementById('last-update').innerText = now.toLocaleTimeString();
-                document.getElementById('current-date').innerText = now.toLocaleDateString('zh-TW').replace(/\//g, '.');
-                calculateAll();
-            }
+        if (data.success) {
+            botInput.value = data.price.toFixed(1);
+            statusEl.innerText = "Online (BOT)";
+            msgEl.innerText = `✅ 台銀同步成功: NT$ ${data.price}`;
+        } else {
+            throw new Error("API failed");
         }
+
+    } catch (err) {
+        statusEl.innerText = "Fallback";
+        msgEl.innerText = "❌ 台銀抓不到，改用備援";
+
+        // 備援 API
+        const res = await fetch("https://api.gold-api.com/price/XAU");
+        const data = await res.json();
+
+        const twd = 32;
+        const price = (data.price / 31.1035) * twd;
+
+        botInput.value = price.toFixed(1);
+    }
+
+    document.getElementById('last-update').innerText = new Date().toLocaleTimeString();
+    calculateAll();
+}
 
         function calculateAll() {
             const botPrice = parseFloat(document.getElementById('bot-real-price').value) || 0;
