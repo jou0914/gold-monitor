@@ -26,26 +26,37 @@
 
         <div class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-50 text-center relative overflow-hidden">
             <div class="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-full -mr-16 -mt-16 opacity-50"></div>
-            <p class="text-[11px] font-black text-amber-600 uppercase tracking-widest mb-3">台銀 100g 換算基準 (每克)</p>
+            <p class="text-[11px] font-black text-amber-600 uppercase tracking-widest mb-3">基準金價 (每克)</p>
             <div class="flex items-baseline justify-center space-x-2">
                 <input type="number" id="bot-real-price" value="4668" 
                        class="w-full text-6xl font-[900] text-slate-900 bg-transparent border-none focus:ring-0 p-0 outline-none tracking-tighter text-center transition-all">
                 <span class="text-slate-300 font-bold text-xl uppercase">TWD</span>
             </div>
             
-            <button onclick="autoFetchBOT()" class="mt-6 flex items-center justify-center space-x-2 bg-slate-900 text-white px-6 py-4 rounded-2xl text-[11px] font-black uppercase hover:bg-amber-500 active:scale-95 transition-all w-full shadow-lg">
+            <div class="grid grid-cols-2 gap-3 mt-6">
+                <button onclick="window.open('https://www.wantgoo.com/global/gold', '_blank')" 
+                        class="flex items-center justify-center bg-red-500 text-white px-4 py-4 rounded-2xl text-[10px] font-black uppercase hover:bg-red-600 active:scale-95 transition-all shadow-md">
+                    <span>玩股網對照</span>
+                </button>
+                <button onclick="window.open('https://rate.bot.com.tw/gold?Lang=zh-TW', '_blank')" 
+                        class="flex items-center justify-center bg-blue-600 text-white px-4 py-4 rounded-2xl text-[10px] font-black uppercase hover:bg-blue-700 active:scale-95 transition-all shadow-md">
+                    <span>台銀官網對照</span>
+                </button>
+            </div>
+
+            <button onclick="autoFetchBOT()" class="mt-4 flex items-center justify-center space-x-2 bg-slate-900 text-white px-6 py-4 rounded-2xl text-[11px] font-black uppercase hover:bg-amber-500 active:scale-95 transition-all w-full shadow-lg">
                 <svg id="sync-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span id="btn-text">同步台銀牌價</span>
+                <span id="btn-text">重新自動同步</span>
             </button>
-            <p id="fetch-msg" class="text-[9px] text-slate-400 mt-3 italic tracking-tight font-bold">自動抓取台銀數據中...</p>
+            <p id="fetch-msg" class="text-[9px] text-slate-400 mt-3 italic font-bold uppercase">自動讀取台銀 100g 牌價中...</p>
         </div>
 
         <div class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-50">
             <div class="grid grid-cols-4 gap-3 mb-8 text-center">
-                <div><p class="text-[10px] font-black text-slate-400 mb-2">兩</p><input type="number" id="unit-liang" placeholder="0" class="w-full bg-slate-50 rounded-2xl py-4 text-center font-black text-lg border-none focus:ring-2 focus:ring-amber-200"></div>
-                <div><p class="text-[10px] font-black text-slate-400 mb-2">錢</p><input type="number" id="unit-qian" placeholder="0" class="w-full bg-slate-50 rounded-2xl py-4 text-center font-black text-lg border-none focus:ring-2 focus:ring-amber-200"></div>
-                <div><p class="text-[10px] font-black text-slate-400 mb-2">分</p><input type="number" id="unit-fen" placeholder="0" class="w-full bg-slate-50 rounded-2xl py-4 text-center font-black text-lg border-none focus:ring-2 focus:ring-amber-200"></div>
-                <div><p class="text-[10px] font-black text-amber-500 mb-2">厘</p><input type="number" id="unit-li" placeholder="0" class="w-full bg-amber-50 rounded-2xl py-4 text-center font-black text-lg border-none text-amber-600 focus:ring-2 focus:ring-amber-200"></div>
+                <div><p class="text-[10px] font-black text-slate-400 mb-2">兩</p><input type="number" id="unit-liang" placeholder="0" class="w-full bg-slate-50 rounded-2xl py-4 text-center font-black text-lg border-none focus:ring-2 focus:ring-amber-200 outline-none"></div>
+                <div><p class="text-[10px] font-black text-slate-400 mb-2">錢</p><input type="number" id="unit-qian" placeholder="0" class="w-full bg-slate-50 rounded-2xl py-4 text-center font-black text-lg border-none focus:ring-2 focus:ring-amber-200 outline-none"></div>
+                <div><p class="text-[10px] font-black text-slate-400 mb-2">分</p><input type="number" id="unit-fen" placeholder="0" class="w-full bg-slate-50 rounded-2xl py-4 text-center font-black text-lg border-none focus:ring-2 focus:ring-amber-200 outline-none"></div>
+                <div><p class="text-[10px] font-black text-amber-500 mb-2">厘</p><input type="number" id="unit-li" placeholder="0" class="w-full bg-amber-50 rounded-2xl py-4 text-center font-black text-lg border-none text-amber-600 focus:ring-2 focus:ring-amber-200 outline-none"></div>
             </div>
 
             <div class="space-y-2 mb-8 text-center">
@@ -56,13 +67,13 @@
             <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2rem] p-6 text-white text-center shadow-xl relative overflow-hidden">
                 <p class="text-[10px] font-bold opacity-70 mb-1 uppercase tracking-widest">換算每克單價</p>
                 <span id="result-per-g" class="text-5xl font-[900] tracking-tighter">---</span>
-                <div id="diff-tag" class="mt-4 mx-auto w-fit bg-white/20 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-sm">等待數據</div>
+                <div id="diff-tag" class="mt-4 mx-auto w-fit bg-white/20 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-sm">等待輸入數據</div>
             </div>
         </div>
 
-        <div class="bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-slate-50">
+        <div class="bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-slate-50 text-[13px]">
             <table class="w-full text-left">
-                <tbody id="specs-body" class="divide-y divide-slate-50 text-[13px]"></tbody>
+                <tbody id="specs-body" class="divide-y divide-slate-50"></tbody>
             </table>
         </div>
     </div>
@@ -84,7 +95,7 @@
                 const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&t=${Date.now()}`;
                 
                 const response = await fetch(proxyUrl);
-                if (!response.ok) throw new Error("Proxy Error");
+                if (!response.ok) throw new Error("Network response was not ok");
                 const data = await response.json();
                 
                 const parser = new DOMParser();
@@ -103,20 +114,18 @@
                 });
 
                 if (foundPrice && foundPrice > 10000) {
-                    botInput.value = Math.round(foundPrice / 100);
-                    msgEl.innerText = `✅ 已同步台銀: NT$ ${fmt.format(foundPrice)}`;
+                    const pricePerGram = foundPrice / 100;
+                    botInput.value = pricePerGram.toFixed(1);
+                    msgEl.innerText = `✅ 已同步台銀 100g: NT$ ${fmt.format(foundPrice)}`;
                     statusEl.innerText = "Online";
                 } else {
-                    throw new Error("Data Parsing Failed");
+                    throw new Error("Parsing error");
                 }
             } catch (err) {
-                console.error("Fetch failed:", err);
-                statusEl.innerText = "Fetch Error";
+                console.error(err);
+                statusEl.innerText = "Offline Mode";
                 msgEl.innerText = "❌ 自動讀取失敗，為您開啟玩股網...";
-                
-                // 🚀 關鍵功能：讀取失敗自動打開網頁
                 window.open("https://www.wantgoo.com/global/gold", "_blank");
-                
             } finally {
                 syncIcon.classList.remove('animate-spin');
                 document.getElementById('last-update').innerText = new Date().toLocaleTimeString();
@@ -146,11 +155,12 @@
                 if (botPrice > 0) {
                     const diffPercent = ((pricePerG - botPrice) / botPrice) * 100;
                     diffTag.innerText = diffPercent > 0 ? `比基準貴 ${diffPercent.toFixed(1)}%` : `比基準便宜 ${Math.abs(diffPercent).toFixed(1)}%`;
-                    diffTag.className = `mt-4 mx-auto w-fit px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${diffPercent > 0 ? 'bg-red-500/20' : 'bg-green-500/20'}`;
+                    diffTag.className = `mt-4 mx-auto w-fit px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${diffPercent > 0 ? 'bg-red-500/20 text-red-700' : 'bg-green-500/20 text-green-700'}`;
                 }
             } else {
                 resultEl.innerText = "---";
-                diffTag.innerText = "等待數據";
+                diffTag.innerText = "等待輸入數據";
+                diffTag.className = "mt-4 mx-auto w-fit bg-slate-100 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest";
             }
 
             const specs = [{ name: "5g 台銀條塊", w: 5 }, { name: "1 兩 (37.5g)", w: 37.5 }, { name: "1 盎司 (1oz)", w: 31.1035 }];
