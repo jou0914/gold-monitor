@@ -3,105 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 金價動態監控</title>
+    <title>2026 金價台制換算器</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen p-4 md:p-8 font-sans">
-    <div class="max-w-md mx-auto">
-        <header class="text-center py-6">
-            <h1 class="text-2xl font-black text-gray-900 tracking-tight">💰 2026 金價動態監控</h1>
-            <p class="text-[10px] text-gray-400 mt-2 uppercase tracking-widest font-bold" id="status">正在同步全球數據...</p>
+<body class="bg-slate-50 text-slate-800 min-h-screen p-4 font-sans pb-20">
+    <div class="max-w-md mx-auto space-y-6">
+        
+        <header class="text-center py-4">
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">💰 2026 金價動態監控</h1>
+            <p class="text-[10px] text-slate-400 mt-2 uppercase tracking-widest font-bold" id="status">同步中...</p>
         </header>
 
-        <div class="bg-white border border-gray-100 rounded-[2.5rem] p-8 shadow-sm mb-6 text-center relative overflow-hidden">
-            <p class="text-[11px] font-bold text-blue-500 uppercase mb-2 tracking-widest">預估本地金價 (每克)</p>
+        <div class="bg-white border border-slate-200 rounded-[2.5rem] p-7 shadow-sm text-center">
+            <h3 class="font-bold text-slate-900 text-sm mb-5 flex items-center justify-center">
+                <span class="mr-2">⚖️</span> 台制重量轉克數 (TWD)
+            </h3>
+            
+            <div class="grid grid-cols-4 gap-2 mb-4">
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 mb-1">兩</p>
+                    <input type="number" id="unit-liang" placeholder="0" class="w-full bg-slate-100 rounded-xl p-3 text-center font-black focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 mb-1">錢</p>
+                    <input type="number" id="unit-qian" placeholder="0" class="w-full bg-slate-100 rounded-xl p-3 text-center font-black focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 mb-1">分</p>
+                    <input type="number" id="unit-fen" placeholder="0" class="w-full bg-slate-100 rounded-xl p-3 text-center font-black focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 mb-1 text-blue-500">厘</p>
+                    <input type="number" id="unit-li" placeholder="0" class="w-full bg-blue-50 rounded-xl p-3 text-center font-black border border-blue-100 focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+            </div>
+
+            <div class="mb-5">
+                <p class="text-[10px] font-bold text-slate-400 mb-1">成交總價 (TWD)</p>
+                <input type="number" id="total-price" placeholder="輸入總金額" class="w-full bg-slate-100 rounded-2xl p-4 text-center text-2xl font-black focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+
+            <div class="bg-blue-600 rounded-3xl p-6 shadow-xl transform -rotate-1">
+                <p class="text-[10px] text-blue-100 font-black uppercase mb-1 tracking-widest">換算每克單價 (TWD)</p>
+                <span id="result-per-g" class="text-4xl font-black text-white">---</span>
+                <p id="diff-info" class="text-[10px] text-blue-200 mt-2 font-medium italic">請填寫重量與總價</p>
+            </div>
+            
+            <p class="text-[9px] text-slate-300 mt-4 leading-tight">
+                * 換算基準：1 錢 = 3.75 克 | 1 錢 = 10 分 = 100 厘
+            </p>
+        </div>
+
+        <div class="bg-white border border-slate-100 rounded-[2.5rem] p-6 shadow-sm text-center">
+            <p class="text-[11px] font-bold text-slate-400 uppercase mb-2 tracking-widest">目前全球盤價 (每克)</p>
             <div class="flex items-center justify-center">
-                <span class="text-6xl font-black text-gray-900 tracking-tighter" id="price-g">---</span>
-                <span class="ml-2 text-gray-400 font-bold text-lg text-left leading-tight">TWD<br><span class="text-[10px]">/ Gram</span></span>
+                <span class="text-4xl font-black text-slate-900 tracking-tighter" id="global-price-g">---</span>
+                <span class="ml-2 text-slate-400 font-bold text-sm">TWD</span>
             </div>
-            <div id="fx-info" class="text-[10px] text-gray-300 mt-4 italic font-medium">資料處理中...</div>
+            <div id="fx-info" class="text-[9px] text-slate-300 mt-2 italic font-medium tracking-tight text-center">正在抓取匯率...</div>
         </div>
 
-        <div class="bg-white border border-gray-100 rounded-[2.5rem] overflow-hidden mb-6 shadow-sm">
-            <table class="w-full text-left text-sm">
-                <thead class="bg-gray-50 text-gray-400 border-b border-gray-100">
-                    <tr>
-                        <th class="p-6 font-bold uppercase text-[10px] tracking-widest text-center">商品規格</th>
-                        <th class="p-6 text-right font-bold text-blue-600 uppercase text-[10px] tracking-widest">2% 回饋價</th>
-                    </tr>
-                </thead>
-                <tbody id="specs-body" class="divide-y divide-gray-50 font-bold text-gray-700"></tbody>
-            </table>
-        </div>
+        <button onclick="updateGlobalData()" class="w-full py-4 bg-slate-900 text-white rounded-[2rem] font-black text-sm tracking-widest shadow-lg active:scale-95 transition-all">
+            REFRESH GLOBAL PRICE
+        </button>
 
-        <div class="bg-white border border-gray-100 rounded-[2.5rem] p-7 shadow-sm mb-8 text-center">
-            <h3 class="font-bold text-gray-900 text-sm mb-5">🐍 2026 蛇年金條預估</h3>
-            <div class="space-y-5">
-                <div class="flex justify-between text-xs px-2">
-                    <span class="text-gray-400 font-bold uppercase">1oz 基準價</span>
-                    <span id="oz-base" class="font-mono font-black text-gray-900">---</span>
-                </div>
-                <div class="bg-yellow-400 rounded-3xl p-5">
-                    <p class="text-[10px] text-yellow-900 font-black uppercase mb-1">實體成交行情預估</p>
-                    <span id="snake-price" class="text-3xl font-black text-gray-900">---</span>
-                </div>
-            </div>
-        </div>
-
-        <button onclick="updateData()" class="w-full py-5 bg-gray-900 hover:bg-black text-white rounded-[2rem] font-black text-lg shadow-2xl transition-all active:scale-95">REFRESH DATA</button>
     </div>
 
     <script>
-        const fmt = new Intl.NumberFormat('zh-TW', { maximumFractionDigits: 0 });
+        const fmt = new Intl.NumberFormat('zh-TW', { maximumFractionDigits: 1 });
+        let currentGlobalG = 0;
 
-        async function updateData() {
+        // 核心換算邏輯
+        function calculateFromLi() {
+            const liang = parseFloat(document.getElementById('unit-liang').value) || 0;
+            const qian = parseFloat(document.getElementById('unit-qian').value) || 0;
+            const fen = parseFloat(document.getElementById('unit-fen').value) || 0;
+            const li = parseFloat(document.getElementById('unit-li').value) || 0;
+            const totalPrice = parseFloat(document.getElementById('total-price').value) || 0;
+
+            const resultEl = document.getElementById('result-per-g');
+            const diffEl = document.getElementById('diff-info');
+
+            // 1. 全部轉為「錢」
+            // 1 兩 = 10 錢
+            // 1 分 = 0.1 錢
+            // 1 厘 = 0.01 錢
+            const totalQian = (liang * 10) + qian + (fen * 0.1) + (li * 0.01);
+            
+            // 2. 「錢」轉「克」 (1 錢 = 3.75 克)
+            const totalGrams = totalQian * 3.75;
+
+            if (totalGrams > 0 && totalPrice > 0) {
+                const pricePerG = totalPrice / totalGrams;
+                resultEl.innerText = fmt.format(pricePerG);
+
+                // 計算與全球盤價的差距
+                if (currentGlobalG > 0) {
+                    const diff = ((pricePerG - currentGlobalG) / currentGlobalG) * 100;
+                    diffEl.innerText = `總重 ${totalGrams.toFixed(3)}g | 溢價: ${diff > 0 ? '+' : ''}${diff.toFixed(1)}%`;
+                }
+            } else {
+                resultEl.innerText = "---";
+                diffEl.innerText = "請填寫重量與總價";
+            }
+        }
+
+        // 抓取全球數據
+        async function updateGlobalData() {
             const statusEl = document.getElementById('status');
-            const priceEl = document.getElementById('price-g');
+            const globalEl = document.getElementById('global-price-g');
             const fxEl = document.getElementById('fx-info');
-            const tableBody = document.getElementById('specs-body');
-            const ozBaseEl = document.getElementById('oz-base');
-            const snakeEl = document.getElementById('snake-price');
 
             statusEl.innerText = "⚡️ CONNECTING...";
 
             try {
-                // 第一層備援：使用 allorigins 抓取雅虎財經
-                const proxy = "https://api.allorigins.win/get?url=";
-                const yahooUrl = encodeURIComponent("https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=1m&range=1d");
-                
-                const response = await fetch(proxy + yahooUrl);
-                const json = await response.json();
-                const data = JSON.parse(json.contents);
-                
-                const usdPerOz = data.chart.result[0].meta.regularMarketPrice;
-                const usdToTwd = 32.5; // 固定匯率提高穩定性，或可用 api 抓
+                // 匯率
+                const fxRes = await fetch("https://open.er-api.com/v6/latest/USD");
+                const fxData = await fxRes.json();
+                const usdToTwd = fxData.rates.TWD || 32.5;
+
+                // 金價 (使用 metals.live 備援)
+                const goldRes = await fetch("https://api.metals.live/v1/spot/gold");
+                const goldData = await goldRes.json();
+                const usdPerOz = goldData[0].price || goldData[0][1];
 
                 const twdPerOz = usdPerOz * usdToTwd;
-                const priceG = twdPerOz / 31.1035;
+                currentGlobalG = twdPerOz / 31.1035;
 
-                priceEl.innerText = fmt.format(priceG);
-                fxEl.innerText = `Yahoo Finance Data | USD: $${fmt.format(usdPerOz)}`;
+                globalEl.innerText = fmt.format(currentGlobalG);
+                fxEl.innerText = `USD/TWD: ${usdToTwd.toFixed(2)} | Gold: $${usdPerOz}/oz`;
                 statusEl.innerText = `✅ UPDATED: ${new Date().toLocaleTimeString()}`;
-
-                const specs = [{ name: "1盎司 (31.1g)", w: 31.1035 }, { name: "1兩 (10錢)", w: 37.5 }, { name: "5錢金條", w: 18.75 }];
-                tableBody.innerHTML = "";
-                specs.forEach(s => {
-                    tableBody.innerHTML += `<tr><td class="p-6 text-gray-400 font-bold text-[10px] tracking-widest text-center uppercase">${s.name}</td><td class="p-6 text-right text-blue-600 font-black text-lg">${fmt.format((priceG * s.w) * 0.98)}</td></tr>`;
-                });
-
-                ozBaseEl.innerText = `$${fmt.format(twdPerOz)}`;
-                snakeEl.innerText = `$${fmt.format(twdPerOz * 1.045)}`;
+                
+                calculateFromLi(); // 重新計算溢價
 
             } catch (err) {
-                console.error(err);
-                statusEl.innerText = "❌ ERROR: RETRYING...";
-                // 這裡如果失敗，顯示一個基於當前市場（約 2850）的估值避免畫面空白
-                const mockPrice = 2865;
-                priceEl.innerText = fmt.format(mockPrice);
+                statusEl.innerText = "❌ API LIMIT - USING ESTIMATE";
+                currentGlobalG = 2860; // 假定一個參考值
+                globalEl.innerText = fmt.format(currentGlobalG);
             }
         }
 
-        updateData();
+        // 監聽所有輸入欄位
+        ['unit-liang', 'unit-qian', 'unit-fen', 'unit-li', 'total-price'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calculateFromLi);
+        });
+
+        updateGlobalData();
     </script>
 </body>
 </html>
