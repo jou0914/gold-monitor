@@ -19,14 +19,14 @@
                 <p id="status" class="text-[10px] font-bold text-slate-400 uppercase mt-1 tracking-widest">Initialising...</p>
             </div>
             <div class="text-right">
-                <p id="current-date" class="text-[10px] font-bold text-slate-400">2026.03.27.1</p>
+                <p id="current-date" class="text-[10px] font-bold text-slate-400">2026.03.27</p>
                 <p id="last-update" class="text-[10px] font-medium text-slate-300">--:--:--</p>
             </div>
         </header>
 
         <div class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-50 text-center relative overflow-hidden">
             <div class="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-full -mr-16 -mt-16 opacity-50"></div>
-            <p id="price-label" class="text-[11px] font-black text-amber-600 uppercase tracking-widest mb-3">台銀基準 (自動偵測中)</p>
+            <p id="price-label" class="text-[11px] font-black text-amber-600 uppercase tracking-widest mb-3">基準金價 (自動偵測中)</p>
             <div class="flex items-baseline justify-center space-x-2">
                 <input type="number" id="bot-real-price" value="4668" 
                        class="w-full text-6xl font-[900] text-slate-900 bg-transparent border-none focus:ring-0 p-0 outline-none tracking-tighter text-center transition-all">
@@ -38,9 +38,9 @@
                         class="flex items-center justify-center bg-red-500 text-white px-4 py-4 rounded-2xl text-[10px] font-black uppercase hover:bg-red-600 active:scale-95 transition-all shadow-md">
                     <span>玩股網對照</span>
                 </button>
-                <button onclick="window.open('https://rate.bot.com.tw/gold?Lang=zh-TW', '_blank')" 
-                        class="flex items-center justify-center bg-blue-600 text-white px-4 py-4 rounded-2xl text-[10px] font-black uppercase hover:bg-blue-700 active:scale-95 transition-all shadow-md">
-                    <span>台銀官網對照</span>
+                <button onclick="window.open('https://wealth.esunbank.com/zh-tw/gold/price/current-price?dev=mobile', '_blank')" 
+                        class="flex items-center justify-center bg-green-600 text-white px-4 py-4 rounded-2xl text-[10px] font-black uppercase hover:bg-green-700 active:scale-95 transition-all shadow-md">
+                    <span>玉山官網對照</span>
                 </button>
             </div>
 
@@ -48,7 +48,7 @@
                 <svg id="sync-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                 <span id="btn-text">重新同步數據</span>
             </button>
-            <p id="fetch-msg" class="text-[9px] text-slate-400 mt-3 italic font-bold uppercase">正在判斷營業時間...</p>
+            <p id="fetch-msg" class="text-[9px] text-slate-400 mt-3 italic font-bold uppercase">正在嘗試同步台銀與玉山數據...</p>
         </div>
 
         <div class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-50">
@@ -81,6 +81,14 @@
     <script>
         const fmt = new Intl.NumberFormat('zh-TW', { maximumFractionDigits: 1 });
 
+        async function fetchWithProxy(url) {
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}&t=${Date.now()}`;
+            const response = await fetch(proxyUrl);
+            if (!response.ok) throw new Error("Proxy error");
+            const data = await response.json();
+            return new DOMParser().parseFromString(data.contents, 'text/html');
+        }
+
         async function autoFetchBOT() {
             const statusEl = document.getElementById('status');
             const botInput = document.getElementById('bot-real-price');
@@ -91,60 +99,72 @@
             statusEl.innerText = "Syncing...";
             syncIcon.classList.add('animate-spin');
 
-            // 判斷是否為下午 5 點後 (17:00)
             const now = new Date();
             const hour = now.getHours();
             const isAfterFive = hour >= 17;
-            const targetKeyword = isAfterFive ? '1公克' : '100公克';
-            
-            labelEl.innerText = isAfterFive ? "台銀基準 (1g 盤後報價)" : "台銀基準 (100g 營業牌價)";
 
             try {
-                const targetUrl = "https://rate.bot.com.tw/gold?Lang=zh-TW";
-                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&t=${Date.now()}`;
-                
-                const response = await fetch(proxyUrl);
-                if (!response.ok) throw new Error("Proxy error");
-                const data = await response.json();
-                
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(data.contents, 'text/html');
-                
+                // --- 嘗試 1: 台灣銀行 ---
+                const botDoc = await fetchWithProxy("https://rate.bot.com.tw/gold?Lang=zh-TW");
+                const targetKeyword = isAfterFive ? '1公克' : '100公克';
                 let foundPrice = null;
-                const rows = doc.querySelectorAll('tr');
+                
+                const rows = botDoc.querySelectorAll('tr');
                 rows.forEach(row => {
-                    // 根據目前時間鎖定關鍵字
                     if (row.innerText.includes(targetKeyword)) {
                         const priceCells = row.querySelectorAll('.text-right');
                         if (priceCells.length > 0) {
-                            const rawText = priceCells[0].innerText.replace(/,/g, '').trim();
-                            foundPrice = parseFloat(rawText);
+                            foundPrice = parseFloat(priceCells[0].innerText.replace(/,/g, '').trim());
                         }
                     }
                 });
 
                 if (foundPrice && foundPrice > 1000) {
-                    // 如果是下午 5 點前，抓到的是 100g 價格，要除以 100
                     const finalPrice = isAfterFive ? foundPrice : (foundPrice / 100);
                     botInput.value = finalPrice.toFixed(1);
-                    
-                    msgEl.innerText = isAfterFive 
-                        ? `✅ 已同步台銀 1g 價格: NT$ ${fmt.format(foundPrice)}` 
-                        : `✅ 已同步台銀 100g: NT$ ${fmt.format(foundPrice)}`;
-                    
-                    statusEl.innerText = "Online";
-                } else {
-                    throw new Error("Price row not found");
+                    labelEl.innerText = isAfterFive ? "台銀基準 (1g 盤後)" : "台銀基準 (100g 牌價)";
+                    msgEl.innerText = `✅ 已同步台銀: NT$ ${fmt.format(foundPrice)}`;
+                    statusEl.innerText = "Online (BOT)";
+                    return;
                 }
+                throw new Error("BOT Failed");
+
             } catch (err) {
-                console.error(err);
-                statusEl.innerText = "Manual Mode";
-                msgEl.innerText = "❌ 讀取失敗，為您開啟對照網頁...";
-                window.open("https://www.wantgoo.com/global/gold", "_blank");
+                console.log("BOT failed, trying E.SUN...");
+                try {
+                    // --- 嘗試 2: 玉山銀行 (備援) ---
+                    const esunDoc = await fetchWithProxy("https://wealth.esunbank.com/zh-tw/gold/price/current-price?dev=mobile");
+                    // 玉山移動版通常價格在特定的 class 或 td 中
+                    const esunPriceCell = esunDoc.querySelector('.price-info__item-price, td:nth-child(2)'); 
+                    let esunPrice = null;
+                    
+                    if (esunPriceCell) {
+                        esunPrice = parseFloat(esunPriceCell.innerText.replace(/,/g, '').trim());
+                    } else {
+                        // 廣泛搜尋包含 4,XXX 的數字
+                        const allText = esunDoc.body.innerText;
+                        const match = allText.match(/[45],[0-9]{3}/);
+                        if (match) esunPrice = parseFloat(match[0].replace(/,/g, ''));
+                    }
+
+                    if (esunPrice && esunPrice > 1000) {
+                        botInput.value = esunPrice.toFixed(1);
+                        labelEl.innerText = "玉山基準 (即時每克)";
+                        msgEl.innerText = `⚠️ 台銀失效，已同步玉山: NT$ ${fmt.format(esunPrice)}`;
+                        statusEl.innerText = "Online (ESUN)";
+                        return;
+                    }
+                    throw new Error("ESUN Failed");
+
+                } catch (esunErr) {
+                    // --- 嘗試 3: 失敗終極方案 ---
+                    statusEl.innerText = "Manual Mode";
+                    msgEl.innerText = "❌ 銀行同步皆失敗，請手動對照...";
+                    window.open("https://www.wantgoo.com/global/gold", "_blank");
+                }
             } finally {
                 syncIcon.classList.remove('animate-spin');
                 document.getElementById('last-update').innerText = new Date().toLocaleTimeString();
-                document.getElementById('current-date').innerText = new Date().toLocaleDateString('zh-TW').replace(/\//g, '.');
                 calculateAll();
             }
         }
@@ -175,11 +195,10 @@
                 }
             } else {
                 resultEl.innerText = "---";
-                diffTag.innerText = "等待輸入數據";
-                diffTag.className = "mt-4 mx-auto w-fit bg-slate-100 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest";
+                diffTag.innerText = "等待數據";
             }
 
-            const specs = [{ name: "5g 台銀條塊", w: 5 }, { name: "1 兩 (37.5g)", w: 37.5 }, { name: "1 盎司 (1oz)", w: 31.1035 }];
+            const specs = [{ name: "5g 條塊參考", w: 5 }, { name: "1 兩 (37.5g)", w: 37.5 }, { name: "1 盎司 (1oz)", w: 31.1035 }];
             tableBody.innerHTML = "";
             specs.forEach(s => {
                 tableBody.innerHTML += `<tr><td class="p-6 text-center font-black text-slate-500 uppercase tracking-widest">${s.name}</td><td class="p-6 text-right text-slate-900 font-black text-lg">NT$ ${fmt.format(botPrice * s.w)}</td></tr>`;
