@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 金價監控穩定版</title>
+    <title>2026 金價監控</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', 'PingFang TC', sans-serif; }
+    </style>
 </head>
 <body class="bg-[#F8FAFC] text-slate-800 min-h-screen p-4 md:p-8">
     <div class="max-w-md mx-auto space-y-6">
@@ -12,7 +16,7 @@
         <header class="flex justify-between items-center px-2 py-4">
             <div>
                 <h1 class="text-2xl font-black text-slate-900">Gold <span class="text-amber-500">Tracker</span></h1>
-                <p id="status" class="text-[10px] font-bold text-slate-400 uppercase mt-1 tracking-widest">Stable Mode</p>
+                <p id="status" class="text-[10px] font-bold text-slate-400 uppercase mt-1 tracking-widest">Manual Correction</p>
             </div>
             <div class="text-right">
                 <p class="text-[10px] font-bold text-slate-400">2026.03.27</p>
@@ -21,49 +25,50 @@
         </header>
 
         <div class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-50 text-center">
-            <p class="text-[11px] font-black text-amber-600 uppercase tracking-widest mb-3">台銀實體賣出基準 (每克)</p>
+            <p class="text-[11px] font-black text-amber-600 uppercase tracking-widest mb-3">當前基準金價 (每克)</p>
             <div class="flex items-baseline justify-center space-x-2">
-                <input type="number" id="bot-real-price" value="4606" 
+                <input type="number" id="bot-real-price" value="4466" 
                        class="w-full text-6xl font-[900] text-slate-900 bg-transparent border-none focus:ring-0 p-0 outline-none tracking-tighter text-center">
                 <span class="text-slate-300 font-bold text-xl uppercase">Twd</span>
             </div>
             
-            <button onclick="fetchGoldPrice()" class="mt-6 flex items-center justify-center space-x-2 bg-amber-500 text-white px-6 py-4 rounded-2xl text-[11px] font-black uppercase hover:bg-slate-900 active:scale-95 transition-all w-full shadow-lg">
-                <span id="sync-text">讀取最新即時金價</span>
+            <button onclick="openWantGoo()" class="mt-6 flex items-center justify-center space-x-2 bg-red-500 text-white px-6 py-4 rounded-2xl text-[11px] font-black uppercase hover:bg-red-600 active:scale-95 transition-all w-full shadow-lg">
+                <span>開啟玩股網對照</span>
             </button>
+            <p class="text-[9px] text-slate-400 mt-3 italic">※ 讀取受限時，請點擊上方按鈕查看紅色字數值</p>
         </div>
 
         <div class="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-50">
             <div class="grid grid-cols-4 gap-3 mb-8 text-center">
                 <div>
                     <p class="text-[10px] font-black text-slate-400 uppercase">兩</p>
-                    <input type="number" id="unit-liang" placeholder="0" class="w-full bg-slate-50 rounded-2xl py-4 text-center font-black text-lg border-none">
+                    <input type="number" id="unit-liang" placeholder="0" class="w-full bg-slate-50 rounded-2xl py-4 text-center font-black text-lg border-none focus:ring-2 focus:ring-amber-200">
                 </div>
                 <div>
                     <p class="text-[10px] font-black text-slate-400 uppercase">錢</p>
-                    <input type="number" id="unit-qian" placeholder="0" class="w-full bg-slate-50 rounded-2xl py-4 text-center font-black text-lg border-none">
+                    <input type="number" id="unit-qian" placeholder="0" class="w-full bg-slate-50 rounded-2xl py-4 text-center font-black text-lg border-none focus:ring-2 focus:ring-amber-200">
                 </div>
                 <div>
                     <p class="text-[10px] font-black text-slate-400 uppercase">分</p>
-                    <input type="number" id="unit-fen" placeholder="0" class="w-full bg-slate-50 rounded-2xl py-4 text-center font-black text-lg border-none">
+                    <input type="number" id="unit-fen" placeholder="0" class="w-full bg-slate-50 rounded-2xl py-4 text-center font-black text-lg border-none focus:ring-2 focus:ring-amber-200">
                 </div>
                 <div>
                     <p class="text-[10px] font-black text-amber-500 uppercase">厘</p>
-                    <input type="number" id="unit-li" placeholder="0" class="w-full bg-amber-50 rounded-2xl py-4 text-center font-black text-lg border-none text-amber-600">
+                    <input type="number" id="unit-li" placeholder="0" class="w-full bg-amber-50 rounded-2xl py-4 text-center font-black text-lg border-none text-amber-600 focus:ring-2 focus:ring-amber-200">
                 </div>
             </div>
 
             <div class="space-y-2 mb-8 text-center">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">成交總金額 (TWD)</p>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">實際成交總價 (TWD)</p>
                 <input type="number" id="total-price" placeholder="輸入成交價" 
-                       class="w-full bg-slate-900 text-white rounded-[1.5rem] py-5 text-center text-3xl font-black outline-none shadow-lg">
+                       class="w-full bg-slate-900 text-white rounded-[1.5rem] py-5 text-center text-3xl font-black outline-none shadow-xl">
             </div>
 
             <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2rem] p-6 text-white text-center shadow-xl">
-                <p class="text-[10px] font-bold opacity-70 mb-1 uppercase tracking-widest">每克單價換算結果</p>
+                <p class="text-[10px] font-bold opacity-70 mb-1 uppercase tracking-widest">換算每克單價</p>
                 <span id="result-per-g" class="text-5xl font-[900] tracking-tighter">---</span>
                 <div id="diff-tag" class="mt-4 mx-auto w-fit bg-white/20 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
-                    等待輸入重量與價格
+                    等待輸入
                 </div>
             </div>
         </div>
@@ -77,42 +82,11 @@
     </div>
 
     <script>
-        const fmt = new Intl.NumberFormat('zh-TW', { maximumFractionDigits: 0 });
+        const fmt = new Intl.NumberFormat('zh-TW', { maximumFractionDigits: 1 });
 
-        // 使用不同的 API 備援
-        async function fetchGoldPrice() {
-            const syncText = document.getElementById('sync-text');
-            const botInput = document.getElementById('bot-real-price');
-            const statusEl = document.getElementById('status');
-            
-            syncText.innerText = "同步中...";
-            
-            try {
-                // 改用 Yahoo Finance 的代理 API，通常比 metals.live 穩定
-                const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=1m&range=1d')}`);
-                const json = await response.json();
-                const data = JSON.parse(json.contents);
-                const usdPerOz = data.chart.result[0].meta.regularMarketPrice;
-
-                const fxRes = await fetch("https://open.er-api.com/v6/latest/USD");
-                const fxData = await fxRes.json();
-                const twdRate = fxData.rates.TWD;
-
-                // 換算：(盎司價 * 匯率 / 31.1035) * 實體溢價係數 (約 1.018 貼近台銀實體價)
-                const pricePerG = (usdPerOz * twdRate) / 31.1035;
-                const finalBotPrice = Math.round(pricePerG * 1.018); 
-
-                botInput.value = finalBotPrice;
-                statusEl.innerText = "Synced";
-            } catch (e) {
-                console.error(e);
-                statusEl.innerText = "Offline Mode";
-                // 失敗時保持原本的 4606 或用戶手動輸入的值
-            } finally {
-                syncText.innerText = "讀取最新即時金價";
-                document.getElementById('last-update').innerText = new Date().toLocaleTimeString();
-                calculateAll();
-            }
+        // 開啟玩股網
+        function openWantGoo() {
+            window.open("https://www.wantgoo.com/global/gold", "_blank");
         }
 
         function calculateAll() {
@@ -136,15 +110,15 @@
 
                 if (botPrice > 0) {
                     const diffPercent = ((pricePerG - botPrice) / botPrice) * 100;
-                    diffTag.innerText = diffPercent > 0 ? `比台銀基準貴 ${diffPercent.toFixed(1)}%` : `比台銀基準便宜 ${Math.abs(diffPercent).toFixed(1)}%`;
+                    diffTag.innerText = diffPercent > 0 ? `比基準貴 ${diffPercent.toFixed(1)}%` : `比基準便宜 ${Math.abs(diffPercent).toFixed(1)}%`;
                 }
             } else {
                 resultEl.innerText = "---";
-                diffTag.innerText = "請輸入重量與價格";
+                diffTag.innerText = "請輸入數據";
             }
 
             const specs = [
-                { name: "5 公克 (台銀條塊)", w: 5 },
+                { name: "5 公克條塊", w: 5 },
                 { name: "1 兩 (37.5g)", w: 37.5 },
                 { name: "1 盎司 (31.1035g)", w: 31.1035 }
             ];
