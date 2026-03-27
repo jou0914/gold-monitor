@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 金價動態監控</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen p-4 md:p-8 font-sans">
+    <div class="max-w-md mx-auto">
+        <header class="text-center py-6">
+            <h1 class="text-2xl font-black text-gray-900 tracking-tight">💰 2026 金價動態監控</h1>
+            <p class="text-[10px] text-gray-400 mt-2 uppercase tracking-widest font-bold" id="status">正在同步全球數據...</p>
+        </header>
+
+        <div class="bg-white border border-gray-100 rounded-[2.5rem] p-8 shadow-sm mb-6 text-center relative overflow-hidden">
+            <p class="text-[11px] font-bold text-blue-500 uppercase mb-2 tracking-widest">預估本地金價 (每克)</p>
+            <div class="flex items-center justify-center">
+                <span class="text-6xl font-black text-gray-900 tracking-tighter" id="price-g">---</span>
+                <span class="ml-2 text-gray-400 font-bold text-lg text-left leading-tight">TWD<br><span class="text-[10px]">/ Gram</span></span>
+            </div>
+            <div id="fx-info" class="text-[10px] text-gray-300 mt-4 italic font-medium">正在獲取即時匯率與數據源...</div>
+        </div>
+
+        <div class="bg-white border border-gray-100 rounded-[2.5rem] overflow-hidden mb-6 shadow-sm">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-gray-50 text-gray-400 border-b border-gray-100">
+                    <tr>
+                        <th class="p-6 font-bold uppercase text-[10px] tracking-widest text-center">商品規格</th>
+                        <th class="p-6 text-right font-bold text-blue-600 uppercase text-[10px] tracking-widest">2% 回饋價</th>
+                    </tr>
+                </thead>
+                <tbody id="specs-body" class="divide-y divide-gray-50 font-bold text-gray-700">
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="bg-white border border-gray-100 rounded-[2.5rem] p-7 shadow-sm mb-8 text-center">
+            <h3 class="font-bold text-gray-900 text-sm mb-5 flex items-center justify-center">
+                <span class="mr-2">🐍</span> 2026 蛇年金條預估
+            </h3>
+            <div class="space-y-5">
+                <div class="flex justify-between text-xs px-2">
+                    <span class="text-gray-400 font-bold uppercase">1oz 基準價</span>
+                    <span id="oz-base" class="font-mono font-black text-gray-900 underline decoration-yellow-400 decoration-2 underline-offset-4">---</span>
+                </div>
+                <div class="bg-yellow-400 rounded-3xl p-5 shadow-inner transform rotate-1">
+                    <p class="text-[10px] text-yellow-900 font-black uppercase mb-1 tracking-widest">實體成交行情預估</p>
+                    <span id="snake-price" class="text-3xl font-black text-gray-900 tracking-tighter">---</span>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="updateAllData()" class="w-full py-5 bg-gray-900 hover:bg-black text-white rounded-[2rem] font-black text-lg shadow-2xl transition-all active:scale-95 active:bg-blue-600">
+            REFRESH DATA
+        </button>
+        
+        <footer class="mt-8 text-[10px] text-gray-300 font-bold text-center tracking-widest uppercase pb-10">
+            Cloud Version • Stable API Integration
+        </footer>
+    </div>
+
+    <script>
+        const fmt = new Intl.NumberFormat('zh-TW', { maximumFractionDigits: 0 });
+
+        async function updateAllData() {
+            const statusEl = document.getElementById('status');
+            const priceEl = document.getElementById('price-g');
+            const fxEl = document.getElementById('fx-info');
+            const tableBody = document.getElementById('specs-body');
+            const ozBaseEl = document.getElementById('oz-base');
+            const snakeEl = document.getElementById('snake-price');
+
+            statusEl.innerText = "⚡️ CONNECTING TO GLOBAL API...";
+
+            try {
+                // 1. 同步獲取匯率
+                const fxRes = await fetch("https://open.er-api.com/v6/latest/USD");
+                const fxData = await fxRes.json();
+                const usdToTwd = fxData.rates.TWD || 32.5;
+
+                // 2. 同步獲取金價 (使用對 Web 友好的 API)
+                const goldRes = await fetch("https://api.metals.live/v1/spot/gold");
+                const goldData = await goldRes.json();
+                const usdPerOz = goldData[0].price || goldData[0][1];
+
+                if (!usdPerOz) throw new Error("Data Error");
+
+                const twdPerOz = usdPerOz * usdToTwd;
+                const priceG = twdPerOz / 31.1035;
+
+                // 更新介面
+                priceEl.innerText = fmt.format(priceG);
+                fxEl.innerText = `USD/TWD: ${usdToTwd.toFixed(2)} | Gold: $${fmt.format(usdPerOz)}/oz`;
+                statusEl.innerText = `✅ UPDATED: ${new Date().toLocaleTimeString()}`;
+
+                const specs = [
+                    { name: "1盎司 (31.1g)", w: 31.1035 },
+                    { name: "1兩 (10錢)", w: 37.5 },
+                    { name: "5錢金條", w: 18.75 }
+                ];
+
+                tableBody.innerHTML = "";
+                specs.forEach(s => {
+                    const cost = (priceG * s.w) * 0.98;
+                    tableBody.innerHTML += `
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="p-6 text-gray-400 font-bold text-[10px] tracking-widest text-center uppercase">${s.name}</td>
+                            <td class="p-6 text-right text-blue-600 font-black text-lg tracking-tighter">${fmt.format(cost)}</td>
+                        </tr>
+                    `;
+                });
+
+                ozBaseEl.innerText = `$${fmt.format(twdPerOz)}`;
+                snakeEl.innerText = `$${fmt.format(twdPerOz * 1.045)}`;
+
+            } catch (err) {
+                console.error(err);
+                statusEl.innerText = "❌ CONNECTION ERROR";
+                priceEl.innerText = "ERR";
+            }
+        }
+
+        updateAllData();
+    </script>
+</body>
+</html>
